@@ -1,0 +1,18 @@
+{
+  "name": "freestyle-sandbox-cli",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {},
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "commander": "^13.1.0",
+    "cookie": "^1.0.2",
+    "dotenv": "^16.4.7",
+    "esbuild": "^0.24.2",
+    "freestyle-sandboxes": "^0.0.16",
+    "http-proxy": "^1.18.1",
+    "typescript": "^5.7.3",
+    "ws": "^8.18.0"
+  },
+  "type": "module"
+}
