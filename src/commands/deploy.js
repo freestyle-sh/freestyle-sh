@@ -56,23 +56,29 @@ export const deployCommand = createCommand("deploy")
     const files = readFilesRecursively("./", ignorePatterns);
 
     let envFile = "";
+    const domain = deployCommand.opts().domain;
     try {
       envFile = fs.readFileSync(path.resolve(process.cwd(), ".env.production"));
     } catch {}
     const envVars = {
       ...dotenv.parse(envFile),
-      DEFAULT_CLOUDSTATE_URL: "https://" + deployCommand.opts().domain,
+      DEFAULT_CLOUDSTATE_URL:
+        (domain.endsWith(".localhost") ? "http://" : "https://") + domain,
     };
 
     await api
       .deployWeb(files, {
         entrypoint: deployCommand.opts().entrypoint,
         envVars,
-        domains: [deployCommand.opts().domain],
+        domains: [domain],
       })
       .then((result) => {
         console.log(result);
-        console.log("Deployed website @ ", "https://" + result.domains[0]);
+        console.log(
+          "Deployed website @ ",
+          (domain.endsWith(".localhost") ? "http://" : "https://") +
+            result.domains[0]
+        );
         console.log("Web Deployment Id: ", result.deploymentId);
       });
 
@@ -92,7 +98,7 @@ export const deployCommand = createCommand("deploy")
         classes: cloudstateFile.toString(),
         config: {
           envVars: envVars,
-          domains: [deployCommand.opts().domain],
+          domains: [domain],
         },
       });
     }
