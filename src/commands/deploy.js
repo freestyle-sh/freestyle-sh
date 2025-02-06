@@ -2,10 +2,12 @@ import { createCommand } from "commander";
 import fs from "node:fs";
 import path from "path";
 import { FreestyleSandboxes } from "freestyle-sandboxes";
+import dotenv from "dotenv";
 
 export const deployCommand = createCommand("deploy")
   .option("--entrypoint <entrypoint>", "Entrypoint file")
   .option("--domain <domain>", "Domain of deployment")
+  .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
     const api = new FreestyleSandboxes({
       apiKey: process.env.FREESTYLE_API_KEY,
@@ -31,7 +33,10 @@ export const deployCommand = createCommand("deploy")
           };
         } else {
           const content = fs.readFileSync(file, { encoding: "base64" });
-          results[file] = { content, encoding: "base64" };
+          results[file.split(process.cwd() + "/")[1]] = {
+            content,
+            encoding: "base64",
+          };
         }
       });
       return results;
@@ -49,22 +54,69 @@ export const deployCommand = createCommand("deploy")
 
     const files = readFilesRecursively("./", ignorePatterns);
 
-    const envVars = dotenv.parse(
-      fs.readFileSync(path.resolve(process.cwd(), ".env.production"))
-    );
+    let envFile = "";
+    try {
+      envFile = fs.readFileSync(path.resolve(process.cwd(), ".env.production"));
+    } catch {}
+    const envVars = {
+      ...dotenv.parse(envFile),
+      DEFAULT_CLOUDSTATE_URL: "https://" + deployCommand.opts().domain,
+    };
 
     await api
       .deployWeb(files, {
-        entrypoint: deployCommand.opts(),
+        entrypoint: deployCommand.opts().entrypoint,
         envVars,
+        domains: [deployCommand.opts().domain],
       })
       .then((result) => {
-        console.log("Deployed website @ ", result.deploymentId);
+        console.log(result);
+        console.log("Deployed website @ ", "https://" + result.domains[0]);
+        console.log("Web Deployment Id: ", result.deploymentId);
       });
 
-    await api.deployCloudstate({
-      classes: fs.readFileSync(
-        path.resolve(process.cwd(), ".freestyle/dist/cloudstate.js")
-      ),
-    });
+    let cloudstateFile;
+
+    try {
+      cloudstateFile = fs.readFileSync(
+        path.resolve(
+          process.cwd(),
+          deployCommand.opts().cloudstate || ".freestyle/dist/cloudstate.js"
+        )
+      );
+    } catch {}
+
+    if (cloudstateFile) {
+      await fetch("https://api.freestyle.sh/cloudstate/v1/deploy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.FREESTYLE_API_KEY}`,
+        },
+        body: JSON.stringify({
+          classes: cloudstateFile.toString(),
+          config: {
+            envVars: envVars,
+            domains: [deployCommand.opts().domain],
+          },
+          cloudstateDatabaseId: undefined, // TODO: Add cloudstate database id
+        }),
+      })
+        .then(async (res) => {
+          if (res.status !== 200) {
+            console.error(await res.text());
+            throw new Error("Failed to deploy cloudstate");
+          }
+
+          const json = await res.json();
+          console.log("Cloudstate Deployment Id", json.deploymentId);
+          console.log("Cloudstate Database Id", json.cloudstateDatabaseId);
+
+          return json;
+        })
+        .catch((e) => {
+          console.error(e);
+          throw new Error("Failed to deploy cloudstate");
+        });
+    }
   });
