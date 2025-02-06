@@ -88,36 +88,12 @@ export const deployCommand = createCommand("deploy")
     } catch {}
 
     if (cloudstateFile) {
-      await fetch("https://api.freestyle.sh/cloudstate/v1/deploy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.FREESTYLE_API_KEY}`,
+      api.deployCloudstate({
+        classes: cloudstateFile.toString(),
+        config: {
+          envVars: envVars,
+          domains: [deployCommand.opts().domain],
         },
-        body: JSON.stringify({
-          classes: cloudstateFile.toString(),
-          config: {
-            envVars: envVars,
-            domains: [deployCommand.opts().domain],
-          },
-          cloudstateDatabaseId: undefined, // TODO: Add cloudstate database id
-        }),
-      })
-        .then(async (res) => {
-          if (res.status !== 200) {
-            console.error(await res.text());
-            throw new Error("Failed to deploy cloudstate");
-          }
-
-          const json = await res.json();
-          console.log("Cloudstate Deployment Id", json.deploymentId);
-          console.log("Cloudstate Database Id", json.cloudstateDatabaseId);
-
-          return json;
-        })
-        .catch((e) => {
-          console.error(e);
-          throw new Error("Failed to deploy cloudstate");
-        });
+      });
     }
   });
