@@ -11,6 +11,7 @@ export const deployCommand = createCommand("deploy")
   .action(async () => {
     const api = new FreestyleSandboxes({
       apiKey: process.env.FREESTYLE_API_KEY,
+      baseUrl: process.env.FREESTYLE_API_URL,
     });
 
     const readFilesRecursively = (dir, ignorePatterns = []) => {

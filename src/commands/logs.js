@@ -6,6 +6,7 @@ export const logsCommand = createCommand("logs")
   .action(async () => {
     const api = new FreestyleSandboxes({
       apiKey: process.env.FREESTYLE_API_KEY,
+      baseUrl: process.env.FREESTYLE_API_URL,
     });
 
     await api
