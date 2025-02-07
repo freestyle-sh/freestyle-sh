@@ -10,11 +10,9 @@ export const logsCommand = createCommand("logs")
       baseUrl: process.env.FREESTYLE_API_URL,
     });
 
-    const deployments = await api.listWebDeployments().then((deploy) => {
-      deploy.entries;
-    });
+    const deployments = await api.listWebDeployments();
 
-    let mostRecentId = deploy.entries.at(0).deploymentId;
+    let mostRecentId = deployments.entries.at(0).deploymentId;
 
     await api.getLogs(mostRecentId).then((logs) => {
       console.log(logs);

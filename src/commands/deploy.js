@@ -94,12 +94,17 @@ export const deployCommand = createCommand("deploy")
     } catch {}
 
     if (cloudstateFile) {
-      api.deployCloudstate({
-        classes: cloudstateFile.toString(),
-        config: {
-          envVars: envVars,
-          domains: [domain],
-        },
-      });
+      api
+        .deployCloudstate({
+          classes: cloudstateFile.toString(),
+          config: {
+            envVars: envVars,
+            domains: [domain],
+          },
+        })
+        .then((res) => {
+          console.log("Cloudstate Deployment Id: ", res.deploymentId);
+          console.log("Cloudstate Database Id:", res.cloudstateDatabaseId);
+        });
     }
   });
