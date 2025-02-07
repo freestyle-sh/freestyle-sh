@@ -45,7 +45,7 @@ export const deployCommand = createCommand("deploy")
 
     // Read .freestyleignore file
     const freestyleIgnorePath = path.resolve(process.cwd(), ".freestyleignore");
-    let ignorePatterns = ["node_modules"];
+    let ignorePatterns = ["node_modules", ".git"];
     if (fs.existsSync(freestyleIgnorePath)) {
       const ignoreContent = fs.readFileSync(freestyleIgnorePath, "utf-8");
       ignorePatterns = ignorePatterns.concat(
