@@ -15,6 +15,11 @@ export const logsCommand = createCommand("logs")
     let mostRecentId = deployments.entries.at(0).deploymentId;
 
     await api.getLogs(mostRecentId).then((logs) => {
-      console.log(logs);
+      logs.logs.forEach((log) => {
+        console.log(
+          `\x1b[34m${new Date(log.timestamp).toLocaleString()}\x1b[0m`,
+          log.message.trim()
+        );
+      });
     });
   });
