@@ -4,12 +4,52 @@ import path from "path";
 import { FreestyleSandboxes } from "freestyle-sandboxes";
 import dotenv from "dotenv";
 import { getDefiniteFreestyleAccessToken } from "../cli-utils/access-tokens.js";
+import {
+  readFreestyleJson,
+  writeFreestyleJson,
+} from "../cli-utils/freestyle-json.js";
+import promptly from "promptly";
+
+function isValidDomain(domain) {
+  return domain.match(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/);
+}
 
 export const deployCommand = createCommand("deploy")
   .option("--web <web>", "Web Entrypoint file")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
+    const freestyleJson = await readFreestyleJson();
+
+    let domain = deployCommand.opts().domain;
+
+    if (!domain && freestyleJson.project.domain) {
+      domain = freestyleJson.project.domain;
+    }
+
+    if (!domain) {
+      console.log("To deploy, you'll need to provide a domain");
+      console.log(
+        "You can authorize your account to use a custom domain at: https://admin.freestyle.sh/dashboard/domains"
+      );
+      console.log(
+        "Or you can use a freestyle .style.dev domain provided by freestyle"
+      );
+      const maybeDomain = await promptly.prompt("Enter a domain: ");
+
+      if (!maybeDomain) {
+        console.error("Domain is required");
+        process.exit(1);
+      }
+
+      if (!isValidDomain(maybeDomain)) {
+        return console.error("Invalid domain");
+      }
+
+      domain = maybeDomain;
+      freestyleJson.project.domain = domain;
+    }
+
     const api = new FreestyleSandboxes({
       apiKey: await getDefiniteFreestyleAccessToken(),
       baseUrl: process.env.FREESTYLE_API_URL,
@@ -57,7 +97,7 @@ export const deployCommand = createCommand("deploy")
     const files = readFilesRecursively("./", ignorePatterns);
 
     let envFile = "";
-    const domain = deployCommand.opts().domain;
+
     try {
       envFile = fs.readFileSync(path.resolve(process.cwd(), ".env.production"));
     } catch {}
@@ -96,17 +136,21 @@ export const deployCommand = createCommand("deploy")
     } catch {}
 
     if (cloudstateFile) {
-      api
+      await api
         .deployCloudstate({
           classes: cloudstateFile.toString(),
           config: {
             envVars: envVars,
             domains: [domain],
+            cloudstateDatabaseId: freestyleJson.project.cloudstateDatabaseId,
           },
         })
         .then((res) => {
           console.log("Cloudstate Deployment Id: ", res.deploymentId);
           console.log("Cloudstate Database Id:", res.cloudstateDatabaseId);
+          freestyleJson.project.cloudstateDatabaseId = res.cloudstateDatabaseId;
         });
     }
+
+    await writeFreestyleJson(freestyleJson);
   });

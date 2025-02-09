@@ -1,6 +1,6 @@
 {
   "name": "freestyle-sh",
-  "version": "0.3.0-beta.12",
+  "version": "0.4.4",
   "module": "./src/index.js",
   "type": "module",
   "bin": {
@@ -35,7 +35,7 @@
     "cookie": "*",
     "dotenv": "^16.4.7",
     "esbuild": "*",
-    "freestyle-sandboxes": "^0.0.19",
+    "freestyle-sandboxes": "^0.0.20",
     "http-proxy": "*",
     "itty-router": "*",
     "open": "*",
