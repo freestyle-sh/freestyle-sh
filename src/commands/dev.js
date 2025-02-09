@@ -11,7 +11,7 @@ import child_process from "node:child_process";
 import { createCommand } from "commander";
 import fs from "node:fs/promises";
 import chokidar from "chokidar";
-import { getCloudstatePlatformBinName } from "../platform.js";
+import { getCloudstatePlatformBinPath } from "../platform.js";
 
 process.env.DEV = "true";
 
@@ -128,14 +128,8 @@ async function startServer(configuration) {
     );
   } else {
     child_process.spawn(
-      "npx",
-      [
-        getCloudstatePlatformBinName(),
-        "serve",
-        "./.freestyle/dist/cloudstate.js",
-        "--watch",
-        "--memory-only",
-      ],
+      getCloudstatePlatformBinPath(),
+      ["serve", "./.freestyle/dist/cloudstate.js", "--watch", "--memory-only"],
       {
         stdio: "inherit",
       }

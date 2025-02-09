@@ -14,3 +14,7 @@ export function getCloudstatePlatformBinName() {
 
   return platformSpecificPackageName;
 }
+
+export function getCloudstatePlatformBinPath() {
+  return `${process.cwd()}/node_modules/${getCloudstatePlatformBinName()}/bin/cloudstate`;
+}
