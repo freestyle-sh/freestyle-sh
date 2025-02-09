@@ -27,9 +27,7 @@
       "types": "./src/svelte-stores.d.ts"
     }
   },
-  "scripts": {
-    "postinstall": "node ./src/post.cjs"
-  },
+  "scripts": {},
   "dependencies": {
     "@deno/shim-deno": "^0.19.1",
     "chokidar": "^4.0.3",
