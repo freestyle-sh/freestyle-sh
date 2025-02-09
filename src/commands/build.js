@@ -1,4 +1,4 @@
-import { buildServer } from "../cloudstate/build.js";
+import { buildServer } from "../cli-utils/cloudstate/build.js";
 import fs from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { createCommand } from "commander";

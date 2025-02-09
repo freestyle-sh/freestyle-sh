@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import "dotenv/config";
 import { program } from "commander";
 import { deployCommand } from "./commands/deploy.js";
@@ -7,7 +8,6 @@ import { devCommand } from "./commands/dev.js";
 import { loginCommand } from "./commands/login.js";
 
 program
-  .version("1.0.0")
   .addCommand(deployCommand)
   .addCommand(logsCommand)
   .addCommand(buildCommand)

@@ -2,7 +2,7 @@ import { build } from "esbuild";
 import {
   makeAllPackagesExternalPlugin,
   removeDecoratorsPlugin,
-} from "./cloudstate/tree-shake.js";
+} from "./cli-utils/cloudstate/tree-shake.js";
 
 export async function getFreestyleConfig() {
   await build({

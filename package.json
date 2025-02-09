@@ -1,20 +1,84 @@
 {
-  "name": "freestyle-sandbox-cli",
-  "version": "1.0.0",
-  "main": "src/main.js",
-  "scripts": {},
+  "name": "freestyle-sh",
+  "version": "0.3.0-beta.12",
+  "module": "./src/index.js",
+  "type": "module",
+  "bin": {
+    "freestyle": "./src/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+    },
+    "./react": {
+      "import": "./src/react.js",
+      "types": "./src/react.d.ts"
+    },
+    "./react-native": {
+      "import": "./src/react-native.js",
+      "types": "./src/react.d.ts"
+    },
+    "./test": {
+      "import": "./src/test.js",
+      "types": "./src/test.d.ts"
+    },
+    "./svelte-stores": {
+      "import": "./src/svelte-stores.js",
+      "types": "./src/svelte-stores.d.ts"
+    }
+  },
+  "scripts": {
+    "postinstall": "node ./src/post.cjs"
+  },
   "dependencies": {
+    "@deno/shim-deno": "^0.19.1",
     "chokidar": "^4.0.3",
     "commander": "^13.1.0",
-    "cookie": "^1.0.2",
+    "cookie": "*",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.24.2",
+    "esbuild": "*",
     "freestyle-sandboxes": "^0.0.19",
-    "http-proxy": "^1.18.1",
+    "http-proxy": "*",
+    "itty-router": "*",
+    "open": "*",
+    "openapi-fetch": "*",
+    "preact": "*",
+    "preact-render-to-string": "*",
     "promptly": "^3.2.0",
-    "typescript": "^5.7.3",
-    "ws": "^8.18.0",
+    "ts-dotenv": "*",
+    "typescript": "*",
+    "ws": "*",
     "zod": "^3.24.1"
   },
-  "type": "module"
+  "peerDependencies": {
+    "@nanostores/query": "*",
+    "@nanostores/react": "*",
+    "nanostores": "*",
+    "react": "*",
+    "svelte": "*"
+  },
+  "peerDependenciesMeta": {
+    "nanostores": {
+      "optional": true
+    },
+    "@nanostores/react": {
+      "optional": true
+    },
+    "@nanostores/query": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "cloudstate-darwin-arm64": "*",
+    "cloudstate-darwin-x64": "*",
+    "cloudstate-linux-arm": "*",
+    "cloudstate-linux-x64": "*",
+    "cloudstate-windows-x64": "*"
+  }
 }

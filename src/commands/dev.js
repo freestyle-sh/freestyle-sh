@@ -1,5 +1,5 @@
 import cookie from "cookie";
-import { buildServer } from "../cloudstate/build.js";
+import { buildServer } from "../cli-utils/cloudstate/build.js";
 import { spawn } from "node:child_process";
 import { createServer as createHttpServer } from "node:http";
 import httpProxy from "http-proxy";
@@ -53,36 +53,41 @@ async function devAction() {
   const server = await startServer(configuration);
   let rebuilding = false;
 
+  let ignoreList = [
+    /node_modules/,
+    /\.git/,
+    /\.test\.(js|ts|tsx)$/,
+    /\.freestyle/,
+    /dist/,
+    /_fresh/,
+    /\.d\.ts$/,
+    /\.astro$/,
+  ];
+
+  try {
+    const freestyleIgnore = await fs.readFile(
+      `${process.cwd()}/.freestyleignore`,
+      "utf8"
+    );
+    const lines = freestyleIgnore
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"));
+    ignoreList.push(...lines);
+  } catch {}
+
   const watcher = chokidar
     .watch("./", {
-      ignored: /node_modules|\.git/,
+      ignored: ignoreList,
       persistent: true,
     })
     .on("all", async (event, path) => {
-      if (
-        path.endsWith(".test.ts") ||
-        path.endsWith(".test.js") ||
-        path.endsWith(".test.tsx") ||
-        path.includes(".freestyle") ||
-        path.includes("node_modules") ||
-        path.includes("dist") ||
-        path.includes("_fresh") ||
-        path.includes(".d.ts") ||
-        path.includes(".astro")
-      ) {
-        return;
-      }
-
-      if (rebuilding) {
-        return;
-      }
-
+      if (rebuilding) return;
       try {
+        console.log("rebuilding...");
         rebuilding = true;
         await server.reload();
-        rebuilding = false;
-      } catch (e) {
-        console.error(e);
+      } finally {
         rebuilding = false;
       }
     });
