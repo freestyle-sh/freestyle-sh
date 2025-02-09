@@ -3,14 +3,15 @@ import fs from "node:fs";
 import path from "path";
 import { FreestyleSandboxes } from "freestyle-sandboxes";
 import dotenv from "dotenv";
+import { getDefiniteFreestyleAccessToken } from "../cli-utils/access-tokens.js";
 
 export const deployCommand = createCommand("deploy")
-  .option("--entrypoint <entrypoint>", "Entrypoint file")
+  .option("--web <web>", "Web Entrypoint file")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
     const api = new FreestyleSandboxes({
-      apiKey: process.env.FREESTYLE_API_KEY,
+      apiKey: await getDefiniteFreestyleAccessToken(),
       baseUrl: process.env.FREESTYLE_API_URL,
     });
 
@@ -68,9 +69,10 @@ export const deployCommand = createCommand("deploy")
 
     await api
       .deployWeb(files, {
-        entrypoint: deployCommand.opts().entrypoint,
+        entrypoint: deployCommand.opts().web,
         envVars,
         domains: [domain],
+        serverStartCheck: true,
       })
       .then((result) => {
         console.log(result);

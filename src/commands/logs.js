@@ -1,12 +1,13 @@
 import { FreestyleSandboxes } from "freestyle-sandboxes";
 import { createCommand } from "commander";
+import { getDefiniteFreestyleAccessToken } from "../cli-utils/access-tokens.js";
 
 export const logsCommand = createCommand("logs")
   // todo: add this back when freestyle supports getting logs by domain
   // .option("--domain <domain>", "Domain of deployment")
   .action(async () => {
     const api = new FreestyleSandboxes({
-      apiKey: process.env.FREESTYLE_API_KEY,
+      apiKey: await getDefiniteFreestyleAccessToken(),
       baseUrl: process.env.FREESTYLE_API_URL,
     });
 
