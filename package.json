@@ -1,6 +1,6 @@
 {
   "name": "freestyle-sh",
-  "version": "0.4.4",
+  "version": "0.4.9",
   "module": "./src/index.js",
   "type": "module",
   "bin": {

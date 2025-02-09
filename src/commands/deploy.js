@@ -9,6 +9,7 @@ import {
   writeFreestyleJson,
 } from "../cli-utils/freestyle-json.js";
 import promptly from "promptly";
+import { getEntrypoints } from "../cli-utils/detect-project-type.js";
 
 function isValidDomain(domain) {
   return domain.match(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/);
@@ -48,6 +49,15 @@ export const deployCommand = createCommand("deploy")
 
       domain = maybeDomain;
       freestyleJson.project.domain = domain;
+    }
+
+    let webEntrypoint = deployCommand.opts().web;
+    let cloudstateEntrypoint = deployCommand.opts().cloudstate;
+
+    if (!webEntrypoint && !cloudstateEntrypoint) {
+      const entrypoints = await getEntrypoints(process.cwd());
+      webEntrypoint = entrypoints.web;
+      cloudstateEntrypoint = entrypoints.cloudstate;
     }
 
     const api = new FreestyleSandboxes({
@@ -101,55 +111,68 @@ export const deployCommand = createCommand("deploy")
     try {
       envFile = fs.readFileSync(path.resolve(process.cwd(), ".env.production"));
     } catch {}
+
     const envVars = {
       ...dotenv.parse(envFile),
       DEFAULT_CLOUDSTATE_URL:
         (domain.endsWith(".localhost") ? "http://" : "https://") + domain,
     };
 
-    await api
-      .deployWeb(files, {
-        entrypoint: deployCommand.opts().web,
-        envVars,
-        domains: [domain],
-        serverStartCheck: true,
-      })
-      .then((result) => {
-        console.log(result);
-        console.log(
-          "Deployed website @ ",
-          (domain.endsWith(".localhost") ? "http://" : "https://") +
-            result.domains[0]
-        );
-        console.log("Web Deployment Id: ", result.deploymentId);
-      });
+    if (webEntrypoint) {
+      if (!files[webEntrypoint]) {
+        console.error(`Web entrypoint "${webEntrypoint}" not found in files`);
+        process.exit(1);
+      }
+
+      await api
+        .deployWeb(files, {
+          entrypoint: webEntrypoint,
+          envVars,
+          domains: [domain],
+          serverStartCheck: true,
+        })
+        .then((result) => {
+          console.log(
+            "Deployed website @ ",
+            (domain.endsWith(".localhost") ? "http://" : "https://") +
+              result.domains[0]
+          );
+          console.log("Web Deployment Id: ", result.deploymentId);
+        });
+    }
 
     let cloudstateFile;
 
-    try {
-      cloudstateFile = fs.readFileSync(
-        path.resolve(
-          process.cwd(),
-          deployCommand.opts().cloudstate || ".freestyle/dist/cloudstate.js"
-        )
-      );
-    } catch {}
+    if (cloudstateEntrypoint) {
+      try {
+        cloudstateFile = fs
+          .readFileSync(path.resolve(process.cwd(), cloudstateEntrypoint))
+          .toString();
 
-    if (cloudstateFile) {
-      await api
-        .deployCloudstate({
-          classes: cloudstateFile.toString(),
-          config: {
-            envVars: envVars,
-            domains: [domain],
-            cloudstateDatabaseId: freestyleJson.project.cloudstateDatabaseId,
-          },
-        })
-        .then((res) => {
-          console.log("Cloudstate Deployment Id: ", res.deploymentId);
-          console.log("Cloudstate Database Id:", res.cloudstateDatabaseId);
-          freestyleJson.project.cloudstateDatabaseId = res.cloudstateDatabaseId;
-        });
+        console.log(cloudstateFile.slice(0, 100) + "...");
+      } catch {
+        console.error(
+          `Cloudstate entrypoint "${cloudstateEntrypoint}" not found in files`
+        );
+      }
+
+      if (cloudstateFile) {
+        await api
+          .deployCloudstate({
+            classes: cloudstateFile,
+            config: {
+              envVars: envVars,
+              domains: [domain],
+              cloudstateDatabaseId: freestyleJson.project.cloudstateDatabaseId,
+            },
+          })
+          .then((res) => {
+            console.log("Cloudstate Deployment Id: ", res.deploymentId);
+            console.log("Cloudstate Database Id:", res.cloudstateDatabaseId);
+            freestyleJson.project.cloudstateDatabaseId =
+              res.cloudstateDatabaseId;
+          });
+      }
     }
 
     await writeFreestyleJson(freestyleJson);
