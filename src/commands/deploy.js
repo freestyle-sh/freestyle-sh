@@ -148,8 +148,6 @@ export const deployCommand = createCommand("deploy")
         cloudstateFile = fs
           .readFileSync(path.resolve(process.cwd(), cloudstateEntrypoint))
           .toString();
-
-        console.log(cloudstateFile.slice(0, 100) + "...");
       } catch {
         console.error(
           `Cloudstate entrypoint "${cloudstateEntrypoint}" not found in files`
