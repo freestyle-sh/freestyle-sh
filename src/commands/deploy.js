@@ -20,6 +20,11 @@ export const deployCommand = createCommand("deploy")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
+    const api = new FreestyleSandboxes({
+      apiKey: await getDefiniteFreestyleAccessToken(),
+      baseUrl: process.env.FREESTYLE_API_URL,
+    });
+
     const freestyleJson = await readFreestyleJson();
 
     let domain = deployCommand.opts().domain;
@@ -59,11 +64,6 @@ export const deployCommand = createCommand("deploy")
       webEntrypoint = entrypoints.web;
       cloudstateEntrypoint = entrypoints.cloudstate;
     }
-
-    const api = new FreestyleSandboxes({
-      apiKey: await getDefiniteFreestyleAccessToken(),
-      baseUrl: process.env.FREESTYLE_API_URL,
-    });
 
     const readFilesRecursively = (dir, ignorePatterns = []) => {
       let results = {};
