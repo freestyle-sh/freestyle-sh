@@ -8,7 +8,7 @@
   },
   "exports": {
     ".": {
-      "import": "./src/index.js",
+      "import": "./src/index.js"
     },
     "./react": {
       "import": "./src/react.js",

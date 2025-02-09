@@ -11,6 +11,7 @@ import child_process from "node:child_process";
 import { createCommand } from "commander";
 import fs from "node:fs/promises";
 import chokidar from "chokidar";
+import { getCloudstatePlatformBinName } from "../platform.js";
 
 process.env.DEV = "true";
 
@@ -129,7 +130,7 @@ async function startServer(configuration) {
     child_process.spawn(
       "npx",
       [
-        "cloudstate",
+        getCloudstatePlatformBinName(),
         "serve",
         "./.freestyle/dist/cloudstate.js",
         "--watch",
