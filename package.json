@@ -4,7 +4,8 @@
   "module": "./src/index.js",
   "type": "module",
   "bin": {
-    "freestyle": "./src/cli.js"
+    "freestyle": "./src/cli.js",
+    "freestyle-sh": "./src/cli.js"
   },
   "exports": {
     ".": {
