@@ -132,6 +132,11 @@ export const deployCommand = createCommand("deploy")
           serverStartCheck: true,
         })
         .then((result) => {
+          // TODO: fix when we have better error handling
+          if (result.message) {
+            return Promise.reject(result.message);
+          }
+
           console.log(
             "Deployed website @ ",
             (domain.endsWith(".localhost") ? "http://" : "https://") +

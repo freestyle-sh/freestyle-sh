@@ -44,7 +44,18 @@ export function useCloud(id, _reserved, options) {
                   headers: _headers,
                 }
               )
-                .then((response) => response.json())
+                .then(async (response) => {
+                  const text = await response.text();
+                  let json;
+                  try {
+                    json = JSON.parse(text);
+                  } catch (e) {
+                    return Promise.reject(
+                      text || "No Response from cloudstate server"
+                    );
+                  }
+                  return json;
+                })
                 .then((_json) => {
                   const json = _json;
                   if (json.error) {

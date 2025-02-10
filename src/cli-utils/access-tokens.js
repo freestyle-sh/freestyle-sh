@@ -31,7 +31,7 @@ export async function writeFreestyleAccessTokens(tokens) {
 export async function getDefiniteFreestyleAccessToken() {
   if (process.env.FREESTYLE_API_KEY) {
     console.log(
-      "Using access token from FREESTYLE_ACCESS_TOKEN environment variable"
+      "Using access token from FREESTYLE_API_KEY environment variable"
     );
     return process.env.FREESTYLE_API_KEY;
   }
