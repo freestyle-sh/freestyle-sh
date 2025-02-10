@@ -51,7 +51,8 @@ export function useCloud(id, _reserved, options) {
                     json = JSON.parse(text);
                   } catch (e) {
                     return Promise.reject(
-                      text || "No Response from cloudstate server"
+                      "Cloudstate Error: Could not parse response: " + text ||
+                        "[Empty Response]"
                     );
                   }
                   return json;
