@@ -45,14 +45,14 @@ export function useCloud(id, _reserved, options) {
                 }
               )
                 .then(async (response) => {
-                  const text = await response.text();
+                  const text = await response.text().catch(() => "");
                   let json;
                   try {
                     json = JSON.parse(text);
                   } catch (e) {
                     return Promise.reject(
-                      "Cloudstate Error: Could not parse response: " + text ||
-                        "[Empty Response]"
+                      "Cloudstate Error: Could not parse response: " +
+                        (text || "[Empty Response]")
                     );
                   }
                   return json;
@@ -105,12 +105,29 @@ class CloudstatePromise extends Promise {
         );
       })
       .catch((err) => {
-        if (!this.onrejected) throw err;
+        if (this.onrejected) {
+          return onfulfilled?.(
+            this.onrejected(err, {
+              invalidatedMethods: err.invalidatedMethods ?? [],
+            }),
+            {
+              invalidatedMethods: err.invalidatedMethods ?? [],
+            }
+          );
+        }
 
-        this.onrejected?.(err);
-        return onrejected?.(err, {
-          invalidatedMethods: err.invalidatedMethods ?? [],
-        });
+        if (onrejected) {
+          onfulfilled?.(
+            onrejected?.(err, {
+              invalidatedMethods: err.invalidatedMethods ?? [],
+            }),
+            {
+              invalidatedMethods: err.invalidatedMethods ?? [],
+            }
+          );
+        }
+
+        return Promise.reject(err);
       });
   }
 }
