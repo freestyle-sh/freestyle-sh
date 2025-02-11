@@ -6,16 +6,20 @@ import { createCommand } from "commander";
 export const buildCommand = createCommand("build").action(async () => {
   fs.readFile(process.cwd() + "/package.json")
     .then((res) => res.toString())
-    .then(() => {
-      spawn("npm", ["run", "build"], {
-        stdio: "inherit",
-        // env: {
-        //   ESBUILD_BINARY_PATH: "",
-        // },
-      });
+    .then((res) => {
+      if (JSON.parse(res)?.scripts?.build) {
+        spawn("npm", ["run", "build"], {
+          stdio: "inherit",
+          // env: {
+          //   ESBUILD_BINARY_PATH: "",
+          // },
+        });
+      } else {
+        console.log("No build script found, skipping npm run build");
+      }
     })
     .catch(() => {
-      console.error("No package.json found, skipping npm run build");
+      console.log("No package.json found, skipping npm run build");
     });
 
   await buildServer();
