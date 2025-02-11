@@ -3,14 +3,16 @@ import { serializeJsonWithBlobs } from "./serialize.js";
 
 // hide this file in stack traces
 {
-  const oldPrepareStackTrace = Error.prepareStackTrace;
-  Error.prepareStackTrace = (error, stack) => {
-    if (error.name === "CloudstateError") {
-      return oldPrepareStackTrace(error, stack.slice(1));
-    }
+  if (typeof Error.prepareStackTrace === "function") {
+    const oldPrepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = (error, stack) => {
+      if (error.name === "CloudstateError") {
+        return oldPrepareStackTrace(error, stack.slice(1));
+      }
 
-    return oldPrepareStackTrace(error, stack);
-  };
+      return oldPrepareStackTrace(error, stack);
+    };
+  }
 }
 
 let _options;
@@ -35,8 +37,8 @@ export function useCloud(id, _reserved, options) {
             options?.baseUrl ||
             _options?.baseUrl ||
             (typeof location !== "undefined" && location?.origin) ||
-            (typeof Deno !== "undefined" &&
-              Deno?.env?.get("DEFAULT_CLOUDSTATE_URL")) ||
+            (typeof process !== "undefined" &&
+              process.env.DEFAULT_CLOUDSTATE_URL) ||
             "http://localhost:8910";
 
           return new CloudstatePromise(() => {
