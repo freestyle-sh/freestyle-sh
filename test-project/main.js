@@ -5,13 +5,15 @@ const app = express();
 const port = 3000;
 
 app.get("/", async (req, res) => {
-  const count = await useCloud("counter")
+  useCloud("counter")
     .increment()
+    .then((result) => {
+      res.send(`the count is ${result.value}`);
+    })
     .catch((err) => {
-      console.error(err);
-      res.send("Failed to increment");
+      console.log(err);
+      res.send("Failed to increment: " + err);
     });
-  res.send(`the count is ${count.value}`);
 });
 
 app.listen(port, () => {

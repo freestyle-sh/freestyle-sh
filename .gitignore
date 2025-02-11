@@ -1,2 +1,5 @@
 node_modules
 .env
+.freestyle
+test-project/cloudstate
+test-project/freestyle.json

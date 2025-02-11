@@ -10,6 +10,6 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.2",
-    "freestyle-sh": "^0.3.0-beta.12"
+    "freestyle-sh": "^0.4.17"
   }
 }
