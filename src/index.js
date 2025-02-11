@@ -1,6 +1,18 @@
 import { getRequestContext } from "./request.js";
 import { serializeJsonWithBlobs } from "./serialize.js";
 
+// hide this file in stack traces
+{
+  const oldPrepareStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = (error, stack) => {
+    if (error.name === "CloudstateError") {
+      return oldPrepareStackTrace(error, stack.slice(1));
+    }
+
+    return oldPrepareStackTrace(error, stack);
+  };
+}
+
 let _options;
 export function configureFreestyle(options) {
   _options = options;
@@ -11,10 +23,13 @@ export function cloudstate(target, ..._args) {
 }
 
 export function useCloud(id, _reserved, options) {
-  return new Proxy(
+  const proxy = new Proxy(
     {},
     {
       get: (_target, prop) => {
+        // error constructed here so that stack trace works as expected
+        const error = new Error();
+
         const fn = (...args) => {
           const base =
             options?.baseUrl ||
@@ -60,11 +75,9 @@ export function useCloud(id, _reserved, options) {
                 .then((_json) => {
                   const json = _json;
                   if (json.error) {
-                    const error = new Error(
-                      json.error.stack?.replace("Error: ", "") ??
-                        json.error.message
-                    );
-                    error.stack = undefined;
+                    // todo: display remote stack once cloudstate supports source maps or at least doesn't show internal stack
+                    error.message = json.error.message;
+                    error.name = "CloudstateError";
                     return Promise.reject(error);
                   } else {
                     return {
@@ -82,6 +95,8 @@ export function useCloud(id, _reserved, options) {
       },
     }
   );
+
+  return proxy;
 }
 
 class CloudstatePromise extends Promise {
