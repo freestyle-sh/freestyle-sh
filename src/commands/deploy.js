@@ -10,6 +10,7 @@ import {
 } from "../cli-utils/freestyle-json.js";
 import promptly from "promptly";
 import { getEntrypoints } from "../cli-utils/detect-project-type.js";
+import { minimatch } from "minimatch";
 
 function isValidDomain(domain) {
   return domain.match(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/);
@@ -73,7 +74,9 @@ export const deployCommand = createCommand("deploy")
         const relativePath = path.relative(process.cwd(), file);
 
         // Check if the file should be ignored
-        if (ignorePatterns.some((pattern) => relativePath.includes(pattern))) {
+        if (
+          ignorePatterns.some((pattern) => minimatch(relativePath, pattern))
+        ) {
           return;
         }
 
