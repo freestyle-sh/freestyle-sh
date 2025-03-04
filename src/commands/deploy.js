@@ -11,6 +11,7 @@ import {
 import promptly from "promptly";
 import { getEntrypoints } from "../cli-utils/detect-project-type.js";
 import { minimatch } from "minimatch";
+import chalk from "chalk";
 
 function isValidDomain(domain) {
   return domain.match(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/);
@@ -99,7 +100,12 @@ export const deployCommand = createCommand("deploy")
 
     // Read .freestyleignore file
     const freestyleIgnorePath = path.resolve(process.cwd(), ".freestyleignore");
-    let ignorePatterns = ["node_modules", ".git"];
+    let ignorePatterns = [
+      ".git",
+      "**/node_modules/**",
+      "**/node_modules/*",
+      "node_modules",
+    ];
     if (fs.existsSync(freestyleIgnorePath)) {
       const ignoreContent = fs.readFileSync(freestyleIgnorePath, "utf-8");
       ignorePatterns = ignorePatterns.concat(
@@ -140,12 +146,25 @@ export const deployCommand = createCommand("deploy")
             return Promise.reject(result.message);
           }
 
+          let extraPadding = "";
+          if (cloudstateEntrypoint) {
+            extraPadding = " ".repeat(7);
+          }
+
           console.log(
-            "Deployed website @ ",
-            (domain.endsWith(".localhost") ? "http://" : "https://") +
-              result.domains[0]
+            "Deployed website @ " + extraPadding,
+            chalk.blue(
+              chalk.underline(
+                (domain.endsWith(".localhost") ? "http://" : "https://") +
+                  result.domains[0]
+              )
+            )
           );
-          console.log("Web Deployment Id: ", result.deploymentId);
+          console.log(
+            chalk.gray(
+              "Web Deployment Id:  " + extraPadding + result.deploymentId
+            )
+          );
         });
     }
 
@@ -173,8 +192,14 @@ export const deployCommand = createCommand("deploy")
             },
           })
           .then((res) => {
-            console.log("Cloudstate Deployment Id: ", res.deploymentId);
-            console.log("Cloudstate Database Id:", res.cloudstateDatabaseId);
+            console.log(
+              chalk.gray("Cloudstate Deployment Id:  " + res.deploymentId)
+            );
+            console.log(
+              chalk.gray(
+                "Cloudstate Database Id:    " + res.cloudstateDatabaseId
+              )
+            );
             freestyleJson.project.cloudstateDatabaseId =
               res.cloudstateDatabaseId;
           });
