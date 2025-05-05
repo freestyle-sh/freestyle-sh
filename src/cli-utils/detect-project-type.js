@@ -6,7 +6,7 @@ export async function isAstroProject(directory) {
 }
 
 export async function getEntrypoints(directory) {
-  if (isAstroProject(directory)) {
+  if (await isAstroProject(directory)) {
     console.log("Astro project detected");
     const entrypoints = {
       web: "dist/server/entry.mjs",

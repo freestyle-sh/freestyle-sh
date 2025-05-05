@@ -39,7 +39,7 @@
     "cookie": "*",
     "dotenv": "^16.4.7",
     "esbuild": "*",
-    "freestyle-sandboxes": "^0.0.20",
+    "freestyle-sandboxes": "^0.0.64",
     "http-proxy": "*",
     "itty-router": "*",
     "minimatch": "^10.0.1",

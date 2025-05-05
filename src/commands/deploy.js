@@ -12,6 +12,7 @@ import promptly from "promptly";
 import { getEntrypoints } from "../cli-utils/detect-project-type.js";
 import { minimatch } from "minimatch";
 import chalk from "chalk";
+import { prepareDirForDeploymentSync } from "freestyle-sandboxes/utils";
 
 function isValidDomain(domain) {
   return domain.match(/^[a-z0-9-]+(\.[a-z0-9-]+)*$/);
@@ -19,6 +20,7 @@ function isValidDomain(domain) {
 
 export const deployCommand = createCommand("deploy")
   .option("--web <web>", "Web Entrypoint file")
+  .option("--build", "Build on freestyle")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
@@ -113,7 +115,7 @@ export const deployCommand = createCommand("deploy")
       );
     }
 
-    const files = readFilesRecursively("./", ignorePatterns);
+    const files = prepareDirForDeploymentSync("./", ignorePatterns);
 
     let envFile = "";
 
@@ -128,7 +130,7 @@ export const deployCommand = createCommand("deploy")
     };
 
     if (webEntrypoint) {
-      if (!files[webEntrypoint]) {
+      if (!files["files"][webEntrypoint]) {
         console.error(`Web entrypoint "${webEntrypoint}" not found in files`);
         process.exit(1);
       }
@@ -139,6 +141,7 @@ export const deployCommand = createCommand("deploy")
           envVars,
           domains: [domain],
           serverStartCheck: true,
+          build: deployCommand.opts().build !== undefined,
         })
         .then((result) => {
           // TODO: fix when we have better error handling
