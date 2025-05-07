@@ -65,8 +65,8 @@ export const deployCommand = createCommand("deploy")
 
     if (!webEntrypoint && !cloudstateEntrypoint) {
       const entrypoints = await getEntrypoints(process.cwd());
-      webEntrypoint = entrypoints.web;
-      cloudstateEntrypoint = entrypoints.cloudstate;
+      webEntrypoint = entrypoints?.web;
+      cloudstateEntrypoint = entrypoints?.cloudstate;
     }
 
     const readFilesRecursively = (dir, ignorePatterns = []) => {
@@ -129,8 +129,8 @@ export const deployCommand = createCommand("deploy")
         (domain.endsWith(".localhost") ? "http://" : "https://") + domain,
     };
 
-    if (webEntrypoint) {
-      if (!files["files"][webEntrypoint]) {
+    if (webEntrypoint || deployCommand.opts().build) {
+      if (webEntrypoint && !files["files"][webEntrypoint]) {
         console.error(`Web entrypoint "${webEntrypoint}" not found in files`);
         process.exit(1);
       }
