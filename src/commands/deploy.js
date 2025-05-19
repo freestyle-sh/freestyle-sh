@@ -21,6 +21,7 @@ function isValidDomain(domain) {
 export const deployCommand = createCommand("deploy")
   .option("--web <web>", "Web Entrypoint file")
   .option("--build", "Build on freestyle")
+  .option("--timeout <timeout>", "Timeout for deployment")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .action(async () => {
@@ -129,6 +130,10 @@ export const deployCommand = createCommand("deploy")
         (domain.endsWith(".localhost") ? "http://" : "https://") + domain,
     };
 
+    const timeout = Number.isNaN(deployCommand.opts().timeout)
+      ? undefined
+      : Number(deployCommand.opts().timeout);
+
     if (webEntrypoint || deployCommand.opts().build) {
       if (webEntrypoint && !files["files"][webEntrypoint]) {
         console.error(`Web entrypoint "${webEntrypoint}" not found in files`);
@@ -140,6 +145,7 @@ export const deployCommand = createCommand("deploy")
           entrypoint: webEntrypoint,
           envVars,
           domains: [domain],
+          timeout,
           serverStartCheck: true,
           build: deployCommand.opts().build !== undefined,
         })
