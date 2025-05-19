@@ -23,6 +23,10 @@ export const deployCommand = createCommand("deploy")
   .option("--build", "Build on freestyle")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
+  .option(
+    "--cloudstate-database-id <cloudstateDatabaseId>",
+    "Cloudstate Database Id"
+  )
   .action(async () => {
     const api = new FreestyleSandboxes({
       apiKey: await getDefiniteFreestyleAccessToken(),
@@ -191,7 +195,9 @@ export const deployCommand = createCommand("deploy")
             config: {
               envVars: envVars,
               domains: [domain],
-              cloudstateDatabaseId: freestyleJson.project.cloudstateDatabaseId,
+              cloudstateDatabaseId:
+                deployCommand.opts().cloudstateDatabaseId ||
+                freestyleJson.project.cloudstateDatabaseId,
             },
           })
           .then((res) => {
