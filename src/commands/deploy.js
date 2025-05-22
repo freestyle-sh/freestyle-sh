@@ -24,7 +24,14 @@ export const deployCommand = createCommand("deploy")
   .option("--timeout <timeout>", "Timeout for deployment")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
-  .option("--env <env...>", "Environment variables in format VARNAME=VALUE (can be used multiple times)")
+  .option(
+    "--env <env...>",
+    "Environment variables in format VARNAME=VALUE (can be used multiple times)"
+  )
+  .option(
+    "--cloudstate-database-id <cloudstateDatabaseId>",
+    "Cloudstate Database Id"
+  )
   .action(async () => {
     const api = new FreestyleSandboxes({
       apiKey: await getDefiniteFreestyleAccessToken(),
@@ -128,13 +135,15 @@ export const deployCommand = createCommand("deploy")
     // Parse command-line environment variables
     const commandLineEnvVars = {};
     const envOptions = deployCommand.opts().env || [];
-    
-    envOptions.forEach(envVar => {
-      const [key, ...valueParts] = envVar.split('=');
+
+    envOptions.forEach((envVar) => {
+      const [key, ...valueParts] = envVar.split("=");
       if (key && valueParts.length > 0) {
-        commandLineEnvVars[key] = valueParts.join('=');
+        commandLineEnvVars[key] = valueParts.join("=");
       } else {
-        console.error(`Invalid environment variable format: ${envVar}. Use VARNAME=VALUE`);
+        console.error(
+          `Invalid environment variable format: ${envVar}. Use VARNAME=VALUE`
+        );
         process.exit(1);
       }
     });
@@ -213,7 +222,9 @@ export const deployCommand = createCommand("deploy")
             config: {
               envVars: envVars,
               domains: [domain],
-              cloudstateDatabaseId: freestyleJson.project.cloudstateDatabaseId,
+              cloudstateDatabaseId:
+                deployCommand.opts().cloudstateDatabaseId ||
+                freestyleJson.project.cloudstateDatabaseId,
             },
           })
           .then((res) => {
