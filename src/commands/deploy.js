@@ -25,6 +25,10 @@ export const deployCommand = createCommand("deploy")
   .option("--domain <domain>", "Domain of deployment")
   .option("--cloudstate <cloudstate>", "Cloudstate file")
   .option(
+    "--env <env...>",
+    "Environment variables in format VARNAME=VALUE (can be used multiple times)"
+  )
+  .option(
     "--cloudstate-database-id <cloudstateDatabaseId>",
     "Cloudstate Database Id"
   )
@@ -128,8 +132,25 @@ export const deployCommand = createCommand("deploy")
       envFile = fs.readFileSync(path.resolve(process.cwd(), ".env.production"));
     } catch {}
 
+    // Parse command-line environment variables
+    const commandLineEnvVars = {};
+    const envOptions = deployCommand.opts().env || [];
+
+    envOptions.forEach((envVar) => {
+      const [key, ...valueParts] = envVar.split("=");
+      if (key && valueParts.length > 0) {
+        commandLineEnvVars[key] = valueParts.join("=");
+      } else {
+        console.error(
+          `Invalid environment variable format: ${envVar}. Use VARNAME=VALUE`
+        );
+        process.exit(1);
+      }
+    });
+
     const envVars = {
       ...dotenv.parse(envFile),
+      ...commandLineEnvVars,
       DEFAULT_CLOUDSTATE_URL:
         (domain.endsWith(".localhost") ? "http://" : "https://") + domain,
     };
